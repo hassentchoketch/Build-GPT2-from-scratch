@@ -1,3 +1,15 @@
-n_layer: 12
-n_head: 12
-n_embd: 768
+# configs/gpt2_small.yaml
+model:
+  block_size: 30
+  vocab_size: 50257
+  n_layer: 12
+  n_head: 12
+  n_embd: 768
+  dropout: 0.1
+  bias: true
+
+data:
+  train_path: "data/raw/train.txt"
+  val_path:   "data/raw/val.txt"
+  batch_size: 6
+  # um_workers: 4
