@@ -1,8 +1,8 @@
 # configs/gpt2_small.yaml
 model:
-  block_size: 1024
+  block_size: 128
   vocab_size: 50257
-  n_layer: 12
+  n_layer: 4
   n_head: 1
   n_embd: 768
   dropout: 0.1
@@ -13,3 +13,8 @@ data:
   val_path:   "data/raw/val.txt"
   batch_size: 2
   # um_workers: 4
+
+train:
+   device: 'cpu'
+   learning_rate: 0.0006
+   weight_decay: 0.1

@@ -15,7 +15,7 @@ class DataConfig:
     # num_workers: int =0 # Default to 0 for local debugging
 
     @classmethod
-    def friom_yaml(cls, config_path: str):
+    def from_yaml(cls, config_path: str):
         with open(config_path, "r") as f:
             config_dict = yaml.safe_load(f)
 

@@ -1,7 +1,7 @@
 import yaml
 from src.model.transformer import GPTConfig
 from src.dataset import DataConfig
-
+from src.trainer import TrainConfig
 from dataclasses import dataclass
 
 
@@ -9,6 +9,7 @@ from dataclasses import dataclass
 class ExperimentConfig:
     model: GPTConfig
     data: DataConfig
+    train: TrainConfig
 
     @classmethod
     def load(cls, path: str):
@@ -16,5 +17,7 @@ class ExperimentConfig:
             raw_yaml = yaml.safe_load(f)
 
         return cls(
-            model=GPTConfig(**raw_yaml["model"]), data=DataConfig(**raw_yaml["data"])
+            model=GPTConfig(**raw_yaml["model"]),
+            data=DataConfig(**raw_yaml["data"]),
+            train=TrainConfig(**raw_yaml["train"]),
         )
