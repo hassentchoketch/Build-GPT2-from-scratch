@@ -16,6 +16,9 @@ class GPTConfig:
     n_embd: int = 768  # Embedding dimention (hidden size)
     dropout: float = 0.1  # Dropout probability
     bias: bool = True  # whether to use bias in Linear layers ( True for GPT-2)
+    max_new_token: int = 20
+    temperature: float = 0.8
+    top_k: int = 4
 
     @classmethod
     def from_yaml(cls, config_path: str):
@@ -121,3 +124,36 @@ class GPT2Model(nn.Module):
             loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1))
 
         return logits, loss
+
+    @torch.no_grad()
+    def generate(self, idx):
+        """Take a conditioning sequence of indices idx (LongTensor of shape (b,t)) and complete
+        the sequence max_new_tokens times, feeding the predictions back into the model each time.
+        """
+        for _ in range(self.config.model.max_new_token):
+            # if the sequence context is growing too leng we must crop it at block size
+            idx_cond = (
+                idx
+                if idx.size(1) <= self.config.model.block_size
+                else idx[:, -self.config.model.block_size :]
+            )
+            # forward the model to get the logits for the index in the sequence
+            logits, _ = self(idx_cond)
+
+            # pluck the logits at the final step and scale by desired temperature
+            logits = logits[:, -1, :] / self.config.model.temperature
+            # optionally crop the logits to only the top k options
+            if self.config.model.top_k is not None:
+                v, _ = torch.topk(logits, min(self.config.model.top_k, logits.size(-1)))
+                logits[logits < v[:, [-1]]] = -float("Inf")
+
+            # apply softmax to convert logits to (normalized) probabilities
+            probs = torch.softmax(logits, dim=-1)
+
+            # sample from the distribution
+            idx_next = torch.multinomial(probs, num_samples=1)
+
+            # append sampled index to the running sequence and continue
+            idx = torch.cat((idx, idx_next), dim=1)
+
+        return idx
